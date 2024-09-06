@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.contrib.auth.models import User
 # Create your models here.
 class Category(models.Model):
     name = models.CharField(max_length=200)
@@ -26,6 +27,7 @@ class Book(models.Model):
         return self.title
     
 class Rating(models.Model):
+    rate_user = models.ForeignKey(User,on_delete=models.CASCADE, related_name='rating')
     rate = models.PositiveIntegerField(validators=[MaxValueValidator(5), MinValueValidator(1)])
     review = models.CharField(max_length=100, blank=True, null=True)
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='ratings')

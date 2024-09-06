@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import viewsets
+from rest_framework.validators import ValidationError
 # Create your views here.
 
 
@@ -105,13 +106,19 @@ class ReviewListView(generics.ListAPIView):
         return Rating.objects.filter(book=pk)
     
 class ReviewCreateView(generics.CreateAPIView):
-    # queryset = Rating.objects.all()
+    # def get_queryset(self):
+    #     return Rating.objects.all()
+    queryset = Rating.objects.all()
     serializer_class = RatingSerializer
     
     def perform_create(self, serializer):
         pk=self.kwargs['pk']
         book = Book.objects.get(pk=pk)
-        serializer.save(book=book)
+        user = self.request.user
+        rating_queryset = Rating.objects.filter(book=book, rate_user=user)
+        if rating_queryset.exists():
+            raise ValidationError(f'Rating already done for {book.title}')
+        serializer.save(book=book,rate_user=user)
 # @api_view(["GET","POST"])
 # def category(request):
 #     if request.method == 'GET':

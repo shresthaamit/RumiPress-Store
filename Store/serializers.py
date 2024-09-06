@@ -1,6 +1,7 @@
 from .models import Category,Book,Rating
 from rest_framework import serializers
 class RatingSerializer(serializers.ModelSerializer):
+    rate_user = serializers.StringRelatedField()
     class Meta:
         model = Rating
         exclude = ('book',)
