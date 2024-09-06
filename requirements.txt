@@ -1,0 +1,6 @@
+# Authentication
+# filter by category
+# Count books based on catergory
+# Permission if only admin acess to put the book and add category
+# Oauth
+# Pagination
