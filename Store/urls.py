@@ -14,7 +14,7 @@ urlpatterns = [
     path('books/<int:pk>/', BookDetailView.as_view(), name="book-detail"),
     path('books/<int:pk>/review-create/', ReviewCreateView.as_view(), name="review-create"),
     path('books/<int:pk>/review/', ReviewListView.as_view(), name="book-detail"),
-    path('review/<int:pk>/', ReviewDetailView.as_view(),name="review-detail"),
+    path('books/review/<int:pk>/', ReviewDetailView.as_view(),name="review-detail"),
     path('', include(router.urls))
     
 ]

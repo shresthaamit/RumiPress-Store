@@ -4,3 +4,10 @@
 # Permission if only admin acess to put the book and add category
 # Oauth
 # Pagination
+
+# Permission
+# 1. Category can only access by = admin
+# 2. View and Rating can be = LOgggedIN
+# 3. BOOK post, delete, PUT, patch = LOgggedIN,Staff
+
+# Generate EXcel file of book details

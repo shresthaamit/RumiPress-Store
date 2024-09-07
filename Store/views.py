@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework.validators import ValidationError
+from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
 # Create your views here.
 
 
@@ -97,6 +98,7 @@ class BookDetailView(APIView):
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Rating.objects.all()
     serializer_class = RatingSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 class ReviewListView(generics.ListAPIView):
     serializer_class = RatingSerializer
@@ -110,7 +112,7 @@ class ReviewCreateView(generics.CreateAPIView):
     #     return Rating.objects.all()
     queryset = Rating.objects.all()
     serializer_class = RatingSerializer
-    
+    permission_classes = [IsAuthenticated]
     def perform_create(self, serializer):
         pk=self.kwargs['pk']
         book = Book.objects.get(pk=pk)
