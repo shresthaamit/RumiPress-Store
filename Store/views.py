@@ -9,12 +9,15 @@ from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework.validators import ValidationError
 from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
+from .permission import  IsAdminOrReadOnlyPermission
 # Create your views here.
 
 
 class BookCategoryVV(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [IsAdminOrReadOnlyPermission]
+    
 
 
 # class BookCategoryView(APIView):
