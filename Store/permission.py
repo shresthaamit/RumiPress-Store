@@ -4,3 +4,10 @@ class IsAdminOrReadOnlyPermission(BasePermission):
         if request.method in ['POST', 'DELETE','PATCH','PUT']:
             return request.user.is_superuser
         return True
+    
+    
+class IsStaffOrReadOnlyPermission(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in ['POST', 'DELETE','PATCH','PUT']:
+            return request.user.is_staff
+        return True

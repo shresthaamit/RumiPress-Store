@@ -9,7 +9,8 @@ from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework.validators import ValidationError
 from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
-from .permission import  IsAdminOrReadOnlyPermission
+from .permission import  IsAdminOrReadOnlyPermission,IsStaffOrReadOnlyPermission
+
 # Create your views here.
 
 
@@ -60,10 +61,12 @@ class BookCategoryVV(viewsets.ModelViewSet):
 #         return Response({"message":"Category Deleted"})
     
 class BookView(APIView):
+    permission_classes = [IsStaffOrReadOnlyPermission]
     def get(self,request):
         book = Book.objects.all()
         book_serializer = BookSerializer(book, many=True)
         return Response(book_serializer.data)
+    
     def post(self,request):
         book_detail_serializer  =  BookSerializer(data = request.data)
         if book_detail_serializer.is_valid():
@@ -74,6 +77,7 @@ class BookView(APIView):
         
         
 class BookDetailView(APIView):
+    permission_classes =[IsStaffOrReadOnlyPermission]
     def get(self, request, pk):
         try:
             book_detail = Book.objects.get(pk=pk)
