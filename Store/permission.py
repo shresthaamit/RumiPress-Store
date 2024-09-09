@@ -11,3 +11,7 @@ class IsStaffOrReadOnlyPermission(BasePermission):
         if request.method in ['POST', 'DELETE','PATCH','PUT']:
             return request.user.is_staff
         return True
+    
+class IsStaffOrIsAdminPermission(BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated and(request.user.is_staff or request.user.is_superuser)

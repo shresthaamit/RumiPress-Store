@@ -8,9 +8,11 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework.validators import ValidationError
-from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
-from .permission import  IsAdminOrReadOnlyPermission,IsStaffOrReadOnlyPermission
-
+from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly, IsAdminUser
+from .permission import  IsAdminOrReadOnlyPermission,IsStaffOrReadOnlyPermission,IsStaffOrIsAdminPermission
+from django.http import HttpResponse
+import pandas  as pd
+from rest_framework.decorators import api_view, permission_classes
 # Create your views here.
 
 
@@ -128,6 +130,33 @@ class ReviewCreateView(generics.CreateAPIView):
         if rating_queryset.exists():
             raise ValidationError(f'Rating already done for {book.title}')
         serializer.save(book=book,rate_user=user)
+        
+
+def download_excel(request):
+    permission= IsStaffOrIsAdminPermission()
+    if not permission.has_permission(request, None):
+         return HttpResponse("You do not have permission to access this resource.", status=403)
+    # if permission_classes. 
+    books = Book.objects.all()
+    all_books = []
+    for book in books:
+        all_books.append({
+            'Title':book.title,
+            'SubTitle':book.subtitle,
+            'Author':book.author,
+            'Publisher':book.publisher,
+            'Publication_date':book.publication_date,
+            'Category':book.category,
+            'Distribution Expenses':book.distribution_expenses,
+            'Isbn':book.isbn
+        }  
+        )
+    # print(all_books)
+    df = pd.DataFrame(all_books)
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=books.xlsx'
+    df.to_excel(response,index=False,engine='openpyxl')
+    return response
 # @api_view(["GET","POST"])
 # def category(request):
 #     if request.method == 'GET':

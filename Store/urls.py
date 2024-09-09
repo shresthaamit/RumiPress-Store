@@ -15,6 +15,7 @@ urlpatterns = [
     path('books/<int:pk>/review-create/', ReviewCreateView.as_view(), name="review-create"),
     path('books/<int:pk>/review/', ReviewListView.as_view(), name="book-detail"),
     path('books/review/<int:pk>/', ReviewDetailView.as_view(),name="review-detail"),
+    path('downloadexcel/', views.download_excel, name='downloadexcel'),
     path('', include(router.urls))
     
 ]
