@@ -8,10 +8,16 @@ class RatingSerializer(serializers.ModelSerializer):
         
         
 class BookSerializer(serializers.ModelSerializer):
+    qr_code_url = serializers.SerializerMethodField()
     ratings  = RatingSerializer(many=True,read_only=True)
     class Meta:
         model = Book
         fields = "__all__"
+        
+    def get_qr_code_url(self, obj):
+        if obj.qr_code:
+            return obj.qr_code.url
+        return None 
 class CategorySerializer(serializers.ModelSerializer):
     books =  BookSerializer(many=True, read_only =True)
     class Meta:

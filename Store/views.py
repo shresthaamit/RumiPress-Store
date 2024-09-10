@@ -13,6 +13,9 @@ from .permission import  IsAdminOrReadOnlyPermission,IsStaffOrReadOnlyPermission
 from django.http import HttpResponse
 import pandas  as pd
 from rest_framework.decorators import api_view, permission_classes
+import qrcode
+from io import BytesIO
+from django.core.files import File
 # Create your views here.
 
 
@@ -61,7 +64,15 @@ class BookCategoryVV(viewsets.ModelViewSet):
 #         category = Category.objects.get(pk=pk)
 #         category.delete()
 #         return Response({"message":"Category Deleted"})
-    
+def generate_qr_code(book):
+    qr_data = f"Title: {book.title}, Author: {book.author}, ISBN: {book.isbn}, Category: {book.category.name}"
+    qr_img = qrcode.make(qr_data)
+    img_io = BytesIO()
+    qr_img.save(img_io, 'PNG')
+    img_io.seek(0)
+    filename = f'{book.title}_qr.png'
+    book.qr_code.save(filename, File(img_io), save=False)
+    book.save()
 class BookView(APIView):
     permission_classes = [IsStaffOrReadOnlyPermission]
     def get(self,request):
@@ -72,7 +83,8 @@ class BookView(APIView):
     def post(self,request):
         book_detail_serializer  =  BookSerializer(data = request.data)
         if book_detail_serializer.is_valid():
-            book_detail_serializer.save()
+            book =book_detail_serializer.save()
+            generate_qr_code(book) 
             return Response(book_detail_serializer.data)
         else:
             return Response(book_detail_serializer.errors)
@@ -94,7 +106,9 @@ class BookDetailView(APIView):
         book_detail = Book.objects.get(pk=pk)
         book_detail_serializer = BookSerializer(book_detail, data=request.data)
         if book_detail_serializer.is_valid():
-            book_detail_serializer.save()
+            book =book_detail_serializer.save()
+            generate_qr_code(book)
+            
             return Response(book_detail_serializer.data)
         else:
             return Response(book_detail_serializer.errors)
@@ -157,6 +171,8 @@ def download_excel(request):
     response['Content-Disposition'] = 'attachment; filename=books.xlsx'
     df.to_excel(response,index=False,engine='openpyxl')
     return response
+
+
 # @api_view(["GET","POST"])
 # def category(request):
 #     if request.method == 'GET':

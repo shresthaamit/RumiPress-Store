@@ -12,6 +12,7 @@ class Category(models.Model):
     
     
 class Book(models.Model):
+    image = models.ImageField(upload_to='book_images/', blank=True, null=True)
     title = models.CharField(max_length=200)
     subtitle = models.CharField(max_length=200)
     author = models.CharField(max_length=200)
@@ -20,7 +21,7 @@ class Book(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='books')
     distribution_expenses = models.DecimalField(max_digits=10, decimal_places=2, blank=False)
     isbn = models.CharField(max_length=13, unique=True, blank=True, null=True)
-    
+    qr_code = models.ImageField(upload_to='qr_codes/', blank=True, null=True)
     class Meta:
         verbose_name_plural = 'Books'
     def __str__(self):
