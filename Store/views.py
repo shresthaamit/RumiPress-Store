@@ -172,7 +172,18 @@ def download_excel(request):
     df.to_excel(response,index=False,engine='openpyxl')
     return response
 
-
+class count_book(APIView):
+    def get(self, request, pk):
+        try:
+            category = Category.objects.get(pk=pk)
+        except Category.DoesNotExist:
+            return Response({"message": "Category does not exist"}, status=404)
+        book_count = Book.objects.filter(category_id=category)
+        if book_count.exists():
+            total = book_count.count()
+            return Response({"count": total})
+        else:
+            return Response({"message": "No books found in this category"}, status=404)
 # @api_view(["GET","POST"])
 # def category(request):
 #     if request.method == 'GET':
