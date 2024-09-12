@@ -11,11 +11,13 @@ from rest_framework.validators import ValidationError
 from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly, IsAdminUser
 from .permission import  IsAdminOrReadOnlyPermission,IsStaffOrReadOnlyPermission,IsStaffOrIsAdminPermission
 from django.http import HttpResponse
-import pandas  as pd
+import pandas as pd
 from rest_framework.decorators import api_view, permission_classes
 import qrcode
 from io import BytesIO
 from django.core.files import File
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 # Create your views here.
 
 
@@ -184,6 +186,28 @@ class count_book(APIView):
             return Response({"count": total})
         else:
             return Response({"message": "No books found in this category"}, status=404)
+        
+        
+class BookPDFView(APIView):
+    def get(self,request,pk):
+        try:
+            book = Book.objects.get(pk=pk)
+        except Book.DoesNotExist:
+            return Response({"message": "Book not found"},status=404)
+        response=HttpResponse(content_type="application/pdf")
+        response['Content-Disposition'] = f'attachment; filename="{book.title}.pdf"'
+        p = canvas.Canvas(response, pagesize=letter)
+        p.setFont("Times-Roman", 12)
+        p.drawString(100, 750, f"Title: {book.title}")
+        p.drawString(100, 730, f"Subtitle: {book.subtitle}")
+        p.drawString(100, 710, f"Author: {book.author}")
+        p.drawString(100, 690, f"Publisher: {book.publisher}")
+        p.drawString(100, 670, f"Publication Date: {book.publication_date.strftime('%Y-%m-%d')}")
+        p.drawString(100, 650, f"ISBN: {book.isbn if book.isbn else 'N/A'}")
+        p.drawString(100, 630, f"Category: {book.category.name}")
+        p.showPage()
+        p.save()
+        return response
 # @api_view(["GET","POST"])
 # def category(request):
 #     if request.method == 'GET':
