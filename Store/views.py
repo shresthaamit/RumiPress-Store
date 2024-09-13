@@ -8,8 +8,9 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework.validators import ValidationError
+from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly, IsAdminUser
-from .permission import  IsAdminOrReadOnlyPermission,IsStaffOrReadOnlyPermission,IsStaffOrIsAdminPermission
+from .permission import IsAdminOrReadOnlyPermission,IsStaffOrReadOnlyPermission,IsStaffOrIsAdminPermission
 from django.http import HttpResponse
 import pandas as pd
 from rest_framework.decorators import api_view, permission_classes
@@ -66,6 +67,7 @@ class BookCategoryVV(viewsets.ModelViewSet):
 #         category = Category.objects.get(pk=pk)
 #         category.delete()
 #         return Response({"message":"Category Deleted"})
+@permission_classes([IsAuthenticated])
 def generate_qr_code(book):
     qr_data = f"Title: {book.title}, Author: {book.author}, ISBN: {book.isbn}, Category: {book.category.name}"
     qr_img = qrcode.make(qr_data)
@@ -189,6 +191,7 @@ class count_book(APIView):
         
         
 class BookPDFView(APIView):
+    permission_classes=[IsAuthenticated]
     def get(self,request,pk):
         try:
             book = Book.objects.get(pk=pk)
