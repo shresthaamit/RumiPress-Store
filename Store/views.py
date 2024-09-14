@@ -10,7 +10,7 @@ from rest_framework import viewsets
 from rest_framework.validators import ValidationError
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly, IsAdminUser
-from .permission import IsAdminOrReadOnlyPermission,IsStaffOrReadOnlyPermission,IsStaffOrIsAdminPermission
+from .permission import IsAdminOrReadOnlyPermission,IsStaffOrReadOnlyPermission,IsStaffOrIsAdminPermission,ReviewUserOrReadOnly
 from django.http import HttpResponse
 import pandas as pd
 from rest_framework.decorators import api_view, permission_classes
@@ -125,7 +125,7 @@ class BookDetailView(APIView):
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Rating.objects.all()
     serializer_class = RatingSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly,ReviewUserOrReadOnly]
 
 class ReviewListView(generics.ListAPIView):
     serializer_class = RatingSerializer
@@ -147,6 +147,13 @@ class ReviewCreateView(generics.CreateAPIView):
         rating_queryset = Rating.objects.filter(book=book, rate_user=user)
         if rating_queryset.exists():
             raise ValidationError(f'Rating already done for {book.title}')
+        
+        if book.total_ratings == 0:
+            book.average_rate =serializer.validated_data['rate']
+        else:
+            book.average_rate = (book.average_rate + serializer.validated_data['rate']) / 2
+        book.total_ratings +=1
+        book.save()   
         serializer.save(book=book,rate_user=user)
         
 
