@@ -18,6 +18,8 @@ urlpatterns = [
     path('downloadexcel/', views.download_excel, name='downloadexcel'),
     path('books/countbook/<int:pk>/', count_book.as_view(), name='book'),
     path('books/<int:pk>/download-pdf/', BookPDFView.as_view(), name="download-book-pdf"),
+    path('books/<int:pk>/favourites/', AddToFavorite.as_view(), name="favourites"),
+    path('books/favourites/',ShowFavorite.as_view(), name="favourites-books"),
     path('', include(router.urls))
     
 ]

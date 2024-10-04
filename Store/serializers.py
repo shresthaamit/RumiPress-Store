@@ -1,4 +1,4 @@
-from .models import Category,Book,Rating
+from .models import Category,Book,Rating,Favourite
 from rest_framework import serializers
 class RatingSerializer(serializers.ModelSerializer):
     rate_user = serializers.StringRelatedField()
@@ -26,6 +26,34 @@ class CategorySerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'url': {'view_name': 'platform-detail', 'lookup_field': 'pk'}
         }
+        
+        
+class BookDetailForFavouriteSerializer(serializers.ModelSerializer):
+    qr_code_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Book
+     
+        fields = ['id', 'title', 'subtitle', 'author', 'publisher', 'publication_date', 'category', 'isbn', 'qr_code_url']
+
+    def get_qr_code_url(self, obj):
+        if obj.qr_code:
+            return obj.qr_code.url
+        return None
+class FavouriteSerializer(serializers.ModelSerializer):
+    book = BookDetailForFavouriteSerializer(read_only=True)
+    class Meta:
+        model = Favourite
+        fields =['id', 'user', 'book']
+        
+    def create(self, validated_data):
+        user =  validated_data.get('user')
+        book = validated_data.get('book')
+        favourite, created = Favourite.objects.get_or_create(user=user, book=book)
+        if not created:
+            raise serializers.ValidationError("The book has already been created in  favourites.")
+        
+        return favourite
     # id = serializers.IntegerField(read_only=True)
     # name = serializers.CharField(max_length=200)
     

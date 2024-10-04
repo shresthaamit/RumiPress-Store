@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import CategorySerializer,BookSerializer,RatingSerializer
-from .models import Category,Book,Rating
+from .serializers import CategorySerializer,BookSerializer,RatingSerializer,FavouriteSerializer
+from .models import Category,Book,Rating,Favourite
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework import generics
@@ -218,6 +218,35 @@ class BookPDFView(APIView):
         p.showPage()
         p.save()
         return response
+    
+    
+class AddToFavorite(generics.CreateAPIView):
+    serializer_class = FavouriteSerializer
+    permission_classes = [IsAuthenticated]
+    def  post(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        user = request.user
+        try:
+            book = Book.objects.get(pk=pk)
+        except Book.DoesNotExist:
+            return Response({'error':"Book Not Found"}, status=404)
+        if Favourite.objects.filter(user=user, book=book).exists():
+            return Response({'message': 'This book is already in your favorites!'}, status=400)
+        serializers = self.get_serializer(data={'user': user.id, 'book': book.id})
+        serializers.is_valid(raise_exception=True)
+        serializers.save()
+        return Response({'message': 'Book added to favorites!'}, status=201)
+    
+    
+class ShowFavorite(generics.ListAPIView):
+    serializer_class = FavouriteSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        return Favourite.objects.filter(user=user)
+    
+    
 # @api_view(["GET","POST"])
 # def category(request):
 #     if request.method == 'GET':

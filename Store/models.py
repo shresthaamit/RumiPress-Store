@@ -42,3 +42,14 @@ class Rating(models.Model):
         verbose_name_plural = 'Ratings'
     def __str__(self):
         return str(self.rate)+" for "+self.book.title
+    
+    
+    
+class Favourite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favourites')
+    book=models.ForeignKey(Book, on_delete=models.CASCADE, related_name='favourites_book')
+    class Meta:
+        verbose_name_plural = 'Favourites'
+        unique_together = ['user', 'book']
+    def __str__(self):
+        return str(self.user.username)
