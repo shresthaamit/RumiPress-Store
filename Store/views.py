@@ -19,6 +19,8 @@ from io import BytesIO
 from django.core.files import File
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from django.db.models import Avg,Count
+from .recommend  import recommend_books
 # Create your views here.
 
 
@@ -152,6 +154,7 @@ class ReviewCreateView(generics.CreateAPIView):
             book.average_rate =serializer.validated_data['rate']
         else:
             book.average_rate = (book.average_rate + serializer.validated_data['rate']) / 2
+            print(book.average_rate)
         book.total_ratings +=1
         book.save()   
         serializer.save(book=book,rate_user=user)
@@ -246,7 +249,13 @@ class ShowFavorite(generics.ListAPIView):
         user = self.request.user
         return Favourite.objects.filter(user=user)
     
-    
+class RecommendBooksView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        recommended_books = recommend_books(request.user)
+        serializers = BookSerializer(recommended_books, many=True)
+        return Response(serializers.data)
+
 # @api_view(["GET","POST"])
 # def category(request):
 #     if request.method == 'GET':

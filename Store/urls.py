@@ -20,6 +20,7 @@ urlpatterns = [
     path('books/<int:pk>/download-pdf/', BookPDFView.as_view(), name="download-book-pdf"),
     path('books/<int:pk>/favourites/', AddToFavorite.as_view(), name="favourites"),
     path('books/favourites/',ShowFavorite.as_view(), name="favourites-books"),
+    path('books/recommend/', RecommendBooksView.as_view(), name="recommend-books"),
     path('', include(router.urls))
     
 ]
