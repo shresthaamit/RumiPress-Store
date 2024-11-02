@@ -131,7 +131,7 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class ReviewListView(generics.ListAPIView):
     serializer_class = RatingSerializer
-    
+    permission_classes=[IsAuthenticated]
     def get_queryset(self):
         pk=self.kwargs['pk']
         return Rating.objects.filter(book=pk)
