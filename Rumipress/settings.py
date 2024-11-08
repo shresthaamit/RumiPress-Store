@@ -137,8 +137,14 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         # 'rest_framework.authentication.SessionAuthentication',
     ],
+    
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
         
     ]
 }
+# settings.py
+AUTHENTICATION_BACKENDS = [
+    'Accounts.backends.EmailBackend', 
+    'django.contrib.auth.backends.ModelBackend',
+]
