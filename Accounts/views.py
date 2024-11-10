@@ -41,3 +41,12 @@ class custom_login(ObtainAuthToken):
             }, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+@api_view(['POST'])
+def logout_view(request):
+    if request.method == 'POST':
+        try:
+            request.user.auth_token.delete()
+            return Response({"message": "User logged out successfully"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
