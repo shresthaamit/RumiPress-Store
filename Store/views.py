@@ -82,8 +82,15 @@ def generate_qr_code(book):
 class BookView(APIView):
     permission_classes = [IsStaffOrReadOnlyPermission]
     def get(self,request):
-        book = Book.objects.all()
-        book_serializer = BookSerializer(book, many=True)
+        category = request.query_params.get('category', None)
+        author = request.query_params.get('author', None)
+        books = Book.objects.all()
+        if category:
+            books = books.filter(category__name__iexact=category)
+        if author:
+            books = books.filter(author__icontains=author) 
+        book_serializer = BookSerializer(books, many=True)
+        print(books) 
         return Response(book_serializer.data)
     
     def post(self,request):
