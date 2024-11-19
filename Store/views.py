@@ -21,6 +21,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from django.db.models import Avg,Count
 from .recommend  import recommend_books
+from rest_framework.pagination import PageNumberPagination
 # Create your views here.
 
 
@@ -89,9 +90,13 @@ class BookView(APIView):
             books = books.filter(category__name__iexact=category)
         if author:
             books = books.filter(author__icontains=author) 
-        book_serializer = BookSerializer(books, many=True)
-        print(books) 
-        return Response(book_serializer.data)
+        paginator = PageNumberPagination()
+        paginator.page_size = 2
+        paginated_books = paginator.paginate_queryset(books, request)
+        book_serializer = BookSerializer(paginated_books, many=True)
+        print(book_serializer) 
+        return paginator.get_paginated_response(book_serializer.data)
+        # return Response(book_serializer.data)
     
     def post(self,request):
         book_detail_serializer  =  BookSerializer(data = request.data)
