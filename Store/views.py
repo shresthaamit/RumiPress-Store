@@ -91,7 +91,7 @@ class BookView(APIView):
         if author:
             books = books.filter(author__icontains=author) 
         paginator = PageNumberPagination()
-        paginator.page_size = 2
+        paginator.page_size = 7
         paginated_books = paginator.paginate_queryset(books, request)
         book_serializer = BookSerializer(paginated_books, many=True)
         print(book_serializer) 

@@ -26,6 +26,7 @@ SECRET_KEY = "django-insecure-2&!hz^1)n5ke@l3ornwg5!i-u4&e5*8n3&s(!7e&%c7%1v&roz
 DEBUG = True
 
 ALLOWED_HOSTS = []
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 # Application definition
@@ -40,7 +41,8 @@ INSTALLED_APPS = [
     "Store",
     "Accounts",
     "rest_framework",
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
+    "corsheaders"
 ]
 
 MIDDLEWARE = [
@@ -51,6 +53,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware'
 ]
 
 ROOT_URLCONF = "Rumipress.urls"
@@ -143,10 +147,13 @@ REST_FRAMEWORK = {
         
     ],  
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 7,
 }
 # settings.py
 AUTHENTICATION_BACKENDS = [
     'Accounts.backends.EmailBackend', 
     'django.contrib.auth.backends.ModelBackend',
+]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React app URL
 ]

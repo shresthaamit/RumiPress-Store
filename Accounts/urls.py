@@ -5,6 +5,7 @@ urlpatterns = [
     path('register/', user_registeration_view, name='register'),
     # path('login/', obtain_auth_token, name="login")
     path("login/",obtain_auth_token, name="login"),
+    #  path("login/", CustomLogin.as_view(), name="login"),
     path('logout/',logout_view, name="logout")
 
     
