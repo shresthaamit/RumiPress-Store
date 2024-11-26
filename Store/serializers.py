@@ -8,6 +8,7 @@ class RatingSerializer(serializers.ModelSerializer):
         
         
 class BookSerializer(serializers.ModelSerializer):
+    category = serializers.CharField(source='category.name')
     qr_code_url = serializers.SerializerMethodField()
     ratings  = RatingSerializer(many=True,read_only=True)
     class Meta:
