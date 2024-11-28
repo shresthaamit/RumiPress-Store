@@ -262,7 +262,7 @@ class ShowFavorite(generics.ListAPIView):
         return Favourite.objects.filter(user=user)
     
 class RecommendBooksView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         recommended_books = recommend_books(request.user)
         serializers = BookSerializer(recommended_books, many=True)

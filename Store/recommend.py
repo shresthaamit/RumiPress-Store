@@ -36,8 +36,14 @@ def recommend_books(user):
             awm = calculate_average_weighted_mean(book,m,C)
             print(logger.info(f"Book: {book.title}, Total Ratings: {book.total_ratings}, AWM: {awm}"))
             recommend_books.append((book,awm))
-            
+         
+        if  len(recommend_books)<4:
+            remaining_books = [
+                (book,calculate_average_weighted_mean(book,m,C))
+                for book in allbooks if book not in [b for b, _ in recommend_books]
+            ]
+            recommend_books.extend(remaining_books[:4 - len(recommend_books)])
             
             
     recommend_books.sort(key=lambda x: x[1], reverse=True)
-    return [book for book, score in recommend_books[:3]]
+    return [book for book, _ in recommend_books[:4]]
