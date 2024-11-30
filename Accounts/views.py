@@ -1,11 +1,13 @@
 from django.shortcuts import render
 from .serializers import UserRegisterSerializer
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAuthenticated
+
 # Create your views here.
 @api_view(["POST"],)
 def user_registeration_view(request):
@@ -50,3 +52,26 @@ def logout_view(request):
             return Response({"message": "User logged out successfully"}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_user_status(request):
+    """
+    Returns the login status and details of the authenticated user.
+    """
+    if request.user.is_authenticated:
+        # If the user is logged in, return user details
+        return Response({
+            "status": "Logged In",
+            "detail": {
+                "username": request.user.username,
+                "email": request.user.email,
+                "date_joined": request.user.date_joined.strftime("%Y-%m-%d"),
+            }
+        }, status=status.HTTP_200_OK)
+    else:
+        # If the user is not logged in, return anonymous status
+        return Response({
+            "status": "Not Logged In",
+            "detail": "Anonymous User",
+        }, status=status.HTTP_401_UNAUTHORIZED)

@@ -6,7 +6,8 @@ urlpatterns = [
     # path('login/', obtain_auth_token, name="login")
     path("login/",obtain_auth_token, name="login"),
     #  path("login/", CustomLogin.as_view(), name="login"),
-    path('logout/',logout_view, name="logout")
+    path('logout/',logout_view, name="logout"),
+     path('checkstatus/', check_user_status, name='check-status'),
 
     
 ]
