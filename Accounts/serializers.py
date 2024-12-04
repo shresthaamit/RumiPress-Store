@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from .models import CustomUser
 from datetime import date
-
+from django.contrib.auth import get_user_model
 class UserRegisterSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style={'input_type': 'password'},write_only=True)
     registration_date = serializers.SerializerMethodField()
@@ -30,3 +31,5 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         account.set_password(password)
         account.save()
         return account     
+    
+    
