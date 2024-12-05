@@ -33,3 +33,23 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         return account     
     
     
+class UserProfileSerializer(serializers.ModelSerializer):
+    profile_picture = serializers.ImageField(required=False, allow_null=True)
+
+    class Meta:
+        model = CustomUser  
+        fields = ['username', 'email', 'profile_picture']
+        extra_kwargs = {
+            'email': {'required': False},
+            'username': {'required': False},
+        }
+
+    def update(self, instance, validated_data):
+        profile_picture = validated_data.pop('profile_picture', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if profile_picture:
+            instance.profile_picture = profile_picture
+        instance.save()
+        return instance

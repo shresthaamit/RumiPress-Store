@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .serializers import UserRegisterSerializer
+from .serializers import UserRegisterSerializer,UserProfileSerializer
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,7 +7,10 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.authentication import TokenAuthentication
+from .serializers import UserProfileSerializer
+from .models import CustomUser
+from rest_framework import generics, permissions
 # Create your views here.
 @api_view(["POST"],)
 def user_registeration_view(request):
@@ -75,3 +78,13 @@ def check_user_status(request):
             "status": "Not Logged In",
             "detail": "Anonymous User",
         }, status=status.HTTP_401_UNAUTHORIZED)
+        
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def get_object(self):
+        # Ensure it fetches the logged-in user
+        return self.request.user
