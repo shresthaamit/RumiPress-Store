@@ -86,5 +86,4 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     authentication_classes = [TokenAuthentication]
 
     def get_object(self):
-        # Ensure it fetches the logged-in user
         return self.request.user

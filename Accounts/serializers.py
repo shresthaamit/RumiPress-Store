@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from .models import CustomUser
 from datetime import date
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from rest_framework.exceptions import ValidationError
 class UserRegisterSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style={'input_type': 'password'},write_only=True)
     registration_date = serializers.SerializerMethodField()
@@ -32,24 +34,43 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         account.save()
         return account     
     
-    
 class UserProfileSerializer(serializers.ModelSerializer):
     profile_picture = serializers.ImageField(required=False, allow_null=True)
+    password = serializers.CharField(write_only=True, required=False)
+    confirm_password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
-        model = CustomUser  
-        fields = ['username', 'email', 'profile_picture']
+        model = CustomUser
+        fields = ['username', 'email', 'profile_picture', 'password', 'confirm_password']
         extra_kwargs = {
             'email': {'required': False},
             'username': {'required': False},
         }
 
+    def validate(self, data):
+        password = data.get('password')
+        confirm_password = data.get('confirm_password')
+
+        if password and confirm_password:
+            if password != confirm_password:
+                raise ValidationError({"password": "Passwords do not match."})
+            validate_password(password)  # Validates the password using Django's built-in validators
+        return data
+
     def update(self, instance, validated_data):
+        # Remove password and confirm_password from validated_data to prevent errors
+        password = validated_data.pop('password', None)
+        validated_data.pop('confirm_password', None)
+
         profile_picture = validated_data.pop('profile_picture', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
         if profile_picture:
             instance.profile_picture = profile_picture
+
+        if password:
+            instance.set_password(password)  # Save the hashed password
+
         instance.save()
         return instance
