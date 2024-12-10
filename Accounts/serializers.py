@@ -58,19 +58,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return data
 
     def update(self, instance, validated_data):
-        # Remove password and confirm_password from validated_data to prevent errors
-        password = validated_data.pop('password', None)
-        validated_data.pop('confirm_password', None)
-
+        # Handle profile_picture update only if provided
         profile_picture = validated_data.pop('profile_picture', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
-        if profile_picture:
+        if profile_picture is not None:  # Only update if a new picture is provided
             instance.profile_picture = profile_picture
 
+        password = validated_data.pop('password', None)
+        validated_data.pop('confirm_password', None)
         if password:
-            instance.set_password(password)  # Save the hashed password
+            instance.set_password(password)
 
         instance.save()
         return instance
