@@ -9,10 +9,11 @@ from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from .serializers import UserProfileSerializer
-from .models import CustomUser
+from .models import CustomUser,UserProfile
 from rest_framework import generics, permissions
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.request import Request 
 # Create your views here.
 @api_view(["POST"],)
 def user_registeration_view(request):
@@ -90,43 +91,21 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 # views.py@api_view(['PUT'])
-@csrf_exempt  # Disable CSRF protection for this view (if needed)
+@csrf_exempt  # Disable CSRF protection for this view (if needed)@api_view(['PUT'])
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_profile(request):
-    user = request.user  # Get the logged-in user
-    
-    # Log the incoming request data for debugging
-    print("Request Data:", request.data)
+    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
 
-    # Create the serializer and validate the data
-    serializer = UserProfileSerializer(user, data=request.data, partial=True)  # partial=True allows partial updates
-    
+    serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+
     if serializer.is_valid():
-        # Save the profile data, including any uploaded image
-        updated_user = serializer.save()
+        updated_profile = serializer.save()
+        profile_picture_url = updated_profile.profile_picture.url if updated_profile.profile_picture else None
 
-        # After saving, we can access the file URL
-        profile_picture_url = updated_user.profile_picture.url if updated_user.profile_picture else None
-        
-        # Log the updated data for debugging
-        print("Updated Data:", {
-            "username": updated_user.username,
-            "email": updated_user.email,
-            "profile_picture": profile_picture_url,
-        })
-        
-        # Return the response with updated user details
         return Response({
             "message": "Profile updated successfully", 
-            "updated_user": {
-                "username": updated_user.username,
-                "email": updated_user.email,
-                "profile_picture": profile_picture_url
-            }
+            "profile_picture": profile_picture_url
         }, status=status.HTTP_200_OK)
-    
-    # Log errors if the serializer is not valid
-    print("Serializer Errors:", serializer.errors)
-    
+
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -5,7 +5,7 @@ from rest_framework.authtoken.models import Token
 # models.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+from django.contrib.auth.models import User
 class CustomUser(AbstractUser):
     profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
 
@@ -27,6 +27,15 @@ class CustomUser(AbstractUser):
     )
     def __str__(self):
         return self.username
+    
+    
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
+
+    def __str__(self):
+        return self.user.username
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:

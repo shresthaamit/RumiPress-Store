@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import CustomUser
+from .models import CustomUser,UserProfile
 from datetime import date
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
@@ -34,42 +34,59 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         account.save()
         return account     
     
+# class UserProfileSerializer(serializers.ModelSerializer):
+#     profile_picture = serializers.ImageField(required=False, allow_null=True)
+#     password = serializers.CharField(write_only=True, required=False)
+#     confirm_password = serializers.CharField(write_only=True, required=False)
+
+#     class Meta:
+#         model = CustomUser
+#         fields = ['username', 'email', 'profile_picture', 'password', 'confirm_password']
+#         extra_kwargs = {
+#             'email': {'required': False},
+#             'username': {'required': False},
+#         }
+
+#     def validate(self, data):
+#         password = data.get('password')
+#         confirm_password = data.get('confirm_password')
+
+#         if password and confirm_password:
+#             if password != confirm_password:
+#                 raise ValidationError({"password": "Passwords do not match."})
+#             validate_password(password)  # Validates the password using Django's built-in validators
+#         return data
+
+#     def update(self, instance, validated_data):
+#         # Handle profile_picture update only if provided
+#         profile_picture = validated_data.pop('profile_picture', None)
+#         for attr, value in validated_data.items():
+#             setattr(instance, attr, value)
+
+#         if profile_picture is not None:  # Only update if a new picture is provided
+#             instance.profile_picture = profile_picture
+
+#         password = validated_data.pop('password', None)
+#         validated_data.pop('confirm_password', None)
+#         if password:
+#             instance.set_password(password)
+
+#         instance.save()
+#         return instance
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
     profile_picture = serializers.ImageField(required=False, allow_null=True)
-    password = serializers.CharField(write_only=True, required=False)
-    confirm_password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
-        model = CustomUser
-        fields = ['username', 'email', 'profile_picture', 'password', 'confirm_password']
-        extra_kwargs = {
-            'email': {'required': False},
-            'username': {'required': False},
-        }
-
-    def validate(self, data):
-        password = data.get('password')
-        confirm_password = data.get('confirm_password')
-
-        if password and confirm_password:
-            if password != confirm_password:
-                raise ValidationError({"password": "Passwords do not match."})
-            validate_password(password)  # Validates the password using Django's built-in validators
-        return data
+        model = UserProfile
+        fields = ['profile_picture']
 
     def update(self, instance, validated_data):
-        # Handle profile_picture update only if provided
         profile_picture = validated_data.pop('profile_picture', None)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
 
-        if profile_picture is not None:  # Only update if a new picture is provided
+        if profile_picture is not None:
             instance.profile_picture = profile_picture
-
-        password = validated_data.pop('password', None)
-        validated_data.pop('confirm_password', None)
-        if password:
-            instance.set_password(password)
 
         instance.save()
         return instance
