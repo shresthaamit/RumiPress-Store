@@ -14,7 +14,7 @@ class CustomUser(AbstractUser):
         'auth.Group',
         related_name='customuser_set',  # New related_name to avoid conflict
         blank=True,
-        help_text='The groups this user belongs to.',
+        help_text='The groups this user belong  s to.',
         related_query_name='customuser'
     )
     

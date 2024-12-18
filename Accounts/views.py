@@ -63,9 +63,18 @@ def logout_view(request):
 @permission_classes([IsAuthenticated])
 def check_user_status(request):
     """
-    Returns the login status and details of the authenticated user.
+    Returns the login status and details of the authenticated user,
+    including profile information.
     """
     if request.user.is_authenticated:
+        try:
+            # Retrieve the user's profile
+            user_profile = UserProfile.objects.get(user=request.user)
+            profile_picture_url = user_profile.profile_picture.url if user_profile.profile_picture else None
+        except UserProfile.DoesNotExist:
+            # Handle case where the profile does not exist
+            profile_picture_url = None
+
         # If the user is logged in, return user details
         return Response({
             "status": "Logged In",
@@ -73,6 +82,7 @@ def check_user_status(request):
                 "username": request.user.username,
                 "email": request.user.email,
                 "date_joined": request.user.date_joined.strftime("%Y-%m-%d"),
+                "profile_picture": profile_picture_url
             }
         }, status=status.HTTP_200_OK)
     else:
@@ -91,21 +101,51 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 # views.py@api_view(['PUT'])
-@csrf_exempt  # Disable CSRF protection for this view (if needed)@api_view(['PUT'])
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def update_profile(request):
-    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+# @csrf_exempt  # Disable CSRF protection for this view (if needed)@api_view(['PUT'])
+# @api_view(['PUT'])
+# @permission_classes([IsAuthenticated])
+# def update_profile(request):
+#     user_profile, created = UserProfile.objects.get_or_create(user=request.user)
 
-    serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+#     serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
 
-    if serializer.is_valid():
-        updated_profile = serializer.save()
-        profile_picture_url = updated_profile.profile_picture.url if updated_profile.profile_picture else None
+#     if serializer.is_valid():
+#         updated_profile = serializer.save()
+#         profile_picture_url = updated_profile.profile_picture.url if updated_profile.profile_picture else None
 
-        return Response({
-            "message": "Profile updated successfully", 
+#         return Response({
+#             "message": "Profile updated successfully", 
+#             "profile_picture": profile_picture_url
+#         }, status=status.HTTP_200_OK)
+
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def get_object(self):
+        # Get or create the user's profile
+        user_profile, created = UserProfile.objects.get_or_create(user=self.request.user)
+        return user_profile
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', True)  # Allow partial updates
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        
+        if serializer.is_valid():
+            updated_profile = serializer.save()
+            print(updated_profile)
+            # Get the profile picture URL after saving
+            profile_picture_url = updated_profile.profile_picture.url if updated_profile.profile_picture else None
+            updated_user = updated_profile.user
+            return Response({
+            "message": "Profile updated successfully",
+            "username": updated_user.username,
+            "email": updated_user.email,
             "profile_picture": profile_picture_url
         }, status=status.HTTP_200_OK)
 
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

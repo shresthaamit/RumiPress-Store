@@ -10,7 +10,7 @@ urlpatterns = [
     #  path("login/", CustomLogin.as_view(), name="login"),
     path('logout/',logout_view, name="logout"),
     path('checkstatus/', check_user_status, name='check-status'),
-    path('profile/', UserProfileView.as_view(), name='user-profile'),
-    path('update_profile/', update_profile, name='update_profile'),
+    # path('profile/', UserProfileView.as_view(), name='user-profile'),
+    path('update_profile/', UserProfileView.as_view(), name='update_profile'),
     
 ]

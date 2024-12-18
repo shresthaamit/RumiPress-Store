@@ -75,18 +75,78 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 #         return instance
 
 
+# class UserProfileSerializer(serializers.ModelSerializer):
+#     profile_picture = serializers.ImageField(required=False, allow_null=True)
+
+#     class Meta:
+#         model = UserProfile
+#         fields = ['profile_picture']
+
+#     def update(self, instance, validated_data):
+#         profile_picture = validated_data.pop('profile_picture', None)
+
+#         if profile_picture is not None:
+#             instance.profile_picture = profile_picture
+
+#         instance.save()
+#         return instance
 class UserProfileSerializer(serializers.ModelSerializer):
     profile_picture = serializers.ImageField(required=False, allow_null=True)
+    username = serializers.CharField(required=False)
+    email = serializers.EmailField(required=False)
+    password = serializers.CharField(write_only=True, required=False)
+    confirm_password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
-        model = UserProfile
-        fields = ['profile_picture']
+        model = CustomUser
+        fields = ['username', 'email', 'profile_picture', 'password', 'confirm_password']
+        extra_kwargs = {
+            'email': {'required': False},
+            'username': {'required': False},
+        }
+
+    def validate(self, data):
+        password = data.get('password')
+        confirm_password = data.get('confirm_password')
+
+        # Validate passwords match
+        if password and confirm_password:
+            if password != confirm_password:
+                raise serializers.ValidationError({"password": "Passwords do not match."})
+            try:
+                validate_password(password)  # Validate the password
+            except ValidationError as e:
+                raise serializers.ValidationError({"password": list(e.messages)})
+
+        return data
 
     def update(self, instance, validated_data):
+    # Update the profile picture
         profile_picture = validated_data.pop('profile_picture', None)
-
         if profile_picture is not None:
             instance.profile_picture = profile_picture
 
+        # Access related user model
+        user = instance.user
+
+        # Update username and email if provided
+        username = validated_data.get('username')
+        if username:
+            user.username = username
+
+        email = validated_data.get('email')
+        if email:
+            user.email = email
+
+        # Update password if provided
+        password = validated_data.pop('password', None)
+        validated_data.pop('confirm_password', None)  # Remove confirm_password as it's not a model field
+        if password:
+            user.set_password(password)
+
+        # Save the updated user instance
+        user.save()
+
+        # Save the updated profile instance
         instance.save()
         return instance
